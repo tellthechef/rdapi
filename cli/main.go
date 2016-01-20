@@ -14,6 +14,7 @@ func main() {
 	// }
 
 	req, _ := api.NewRequest("GET", "/Restaurant/4075", nil)
+	req, _ := api.NewRequest("GET", "/Restaurant/4075/DiaryData?date=2016-01-19", nil)
 	client := &http.Client{}
 
 	res, _ := client.Do(req)

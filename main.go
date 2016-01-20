@@ -51,8 +51,12 @@ func (keys *authKeys) Valid() bool {
 func (conf *RDConfig) doOAuth(params []string) (url.Values, error) {
 	req, _ := http.NewRequest("POST", conf.Endpoint, strings.NewReader(strings.Join(params, "&")))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=utf8")
+	req.Header.Set("Accept", "application/json")
 
 	client := &http.Client{}
+	client.Transport = &http.Transport{
+		DisableCompression: true,
+	}
 
 	res, _ := client.Do(req)
 	body, _ := ioutil.ReadAll(res.Body)
