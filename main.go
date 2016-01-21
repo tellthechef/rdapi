@@ -35,7 +35,7 @@ func New(consumerKey string, consumerSecret string, secondSecret string) *RDConf
 		ConsumerSecret:  consumerSecret,
 		SecondSecret:    secondSecret,
 		Endpoint:        "http://uk.rdbranch.com/OAuth/V10a",
-		ServiceEndpoint: "http://uk.rdbranch.com/WebServices/Epos/V1",
+		ServiceEndpoint: "http://uk.rdbranch.com/WebServices/Epos/v1", // http://app.restaurantdiary.com/WebServices/Epos/v1 ??
 	}
 }
 
@@ -48,39 +48,37 @@ func (keys *authKeys) Valid() bool {
 	return len(keys.Token) > 0 && len(keys.Secret) > 0
 }
 
-func (conf *RDConfig) doOAuth(params []string) (url.Values, error) {
-	req, _ := http.NewRequest("POST", conf.Endpoint, strings.NewReader(strings.Join(params, "&")))
+func (conf *RDConfig) doOAuth(params []string, sig string, pos int) (url.Values, error) {
+	var body []string
+	body = append(body, params[:pos]...)
+	body = append(body, "oauth_signature="+url.QueryEscape(sig))
+	body = append(body, params[pos:]...)
+
+	req, _ := http.NewRequest("POST", conf.Endpoint, strings.NewReader(strings.Join(body, "&")))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=utf8")
-	req.Header.Set("Accept", "application/json")
 
 	client := &http.Client{}
-	client.Transport = &http.Transport{
-		DisableCompression: true,
-	}
 
 	res, _ := client.Do(req)
-	body, _ := ioutil.ReadAll(res.Body)
+	resBody, _ := ioutil.ReadAll(res.Body)
 
-	return url.ParseQuery(string(body))
+	return url.ParseQuery(string(resBody))
 }
 
 func (conf *RDConfig) doFirstAuth() error {
-	params := getParamArray([][]string{
-		{"oauth_consumer_key", conf.ConsumerKey},
-		{"oauth_nonce", genNonce()},
-		{"oauth_signature_method", "HMAC-SHA1"},
-		{"oauth_timestamp", strconv.Itoa(int(time.Now().Unix()))},
-		{"oauth_version", "1.0"},
-		{"scope", "http://app.restaurantdiary.com/WebServices/Epos/v1"},
-		{"second_secret", conf.SecondSecret},
-	})
+	params := []string{
+		"oauth_consumer_key=" + url.QueryEscape(conf.ConsumerKey),
+		"oauth_nonce=" + genNonce(),
+		"oauth_signature_method=HMAC-SHA1",
+		"oauth_timestamp=" + strconv.Itoa(int(time.Now().Unix())),
+		"oauth_version=1.0",
+		"scope=" + url.QueryEscape("http://app.restaurantdiary.com/WebServices/Epos/v1"),
+		"second_secret=" + url.QueryEscape(conf.SecondSecret),
+	}
 
 	signature := generateOAuthKey("POST", conf.Endpoint, params, conf.ConsumerSecret, "")
 
-	paramsBody := []string{params[0], params[1], "oauth_signature=" + url.QueryEscape(signature)}
-	paramsBody = append(paramsBody, params[2:]...)
-
-	values, err := conf.doOAuth(paramsBody)
+	values, err := conf.doOAuth(params, signature, 3)
 	if err != nil {
 		fmt.Println("Could not fetch first set of OAuth keys")
 		return err
@@ -96,21 +94,18 @@ func (conf *RDConfig) doFirstAuth() error {
 }
 
 func (conf *RDConfig) doSecondAuth() error {
-	params := getParamArray([][]string{
-		{"oauth_consumer_key", conf.ConsumerKey},
-		{"oauth_nonce", genNonce()},
-		{"oauth_signature_method", "HMAC-SHA1"},
-		{"oauth_timestamp", strconv.Itoa(int(time.Now().Unix()))},
-		{"oauth_token", conf.firstAuth.Token},
-		{"oauth_version", "1.0"},
-	})
+	params := []string{
+		"oauth_consumer_key=" + url.QueryEscape(conf.ConsumerKey),
+		"oauth_nonce=" + genNonce(),
+		"oauth_signature_method=HMAC-SHA1",
+		"oauth_timestamp=" + strconv.Itoa(int(time.Now().Unix())),
+		"oauth_token=" + url.QueryEscape(conf.firstAuth.Token),
+		"oauth_version=1.0",
+	}
 
 	signature := generateOAuthKey("POST", conf.Endpoint, params, conf.ConsumerSecret, conf.firstAuth.Secret)
 
-	paramsBody := []string{params[0], params[1], "oauth_signature=" + url.QueryEscape(signature)}
-	paramsBody = append(paramsBody, params[2:]...)
-
-	values, err := conf.doOAuth(paramsBody)
+	values, err := conf.doOAuth(params, signature, 4)
 	if err != nil {
 		fmt.Println("Could not fetch second set of OAuth keys")
 		return err
@@ -145,7 +140,9 @@ func (conf *RDConfig) SetKeys(token string, secret string) {
 
 func (conf *RDConfig) NewRequest(method, urlStr string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequest(method, conf.ServiceEndpoint+urlStr, nil)
+
 	req.Header.Set("Authorization", conf.GetAuthorization(method, urlStr))
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("Accept", "application/json")
 
 	return req, err

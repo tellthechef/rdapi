@@ -8,13 +8,13 @@ import (
 )
 
 func main() {
-	// - redacted api setup
-	// if err := api.Authenticate(); err != nil {
-	// 	return
-	// }
+	//- redacted API keys
+	if err := api.Authenticate(); err != nil {
+		return
+	}
 
-	req, _ := api.NewRequest("GET", "/Restaurant/4075", nil)
-	req, _ := api.NewRequest("GET", "/Restaurant/4075/DiaryData?date=2016-01-19", nil)
+	// req, _ := api.NewRequest("GET", "/Restaurant/4075", nil)
+	req, _ := api.NewRequest("GET", "/Restaurant/4075/DiaryData?date=2016-01-20", nil)
 	client := &http.Client{}
 
 	res, _ := client.Do(req)
