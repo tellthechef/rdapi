@@ -15,6 +15,15 @@ type authKeys struct {
 	Secret string
 }
 
+func (keys *authKeys) Parse(values url.Values) {
+	keys.Token = values.Get("oauth_token")
+	keys.Secret = values.Get("oauth_token_secret")
+}
+
+func (keys *authKeys) Valid() bool {
+	return len(keys.Token) > 0 && len(keys.Secret) > 0
+}
+
 func (conf *RDConfig) GetAuthorization(method string, endpoint string) string {
 	nonce := genNonce()
 	timestamp := strconv.Itoa(int(time.Now().Unix()))

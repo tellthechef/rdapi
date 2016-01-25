@@ -11,36 +11,15 @@ import (
 	"time"
 )
 
-type RDConfig struct {
-	ConsumerKey    string
-	ConsumerSecret string
-	SecondSecret   string
-
-	Endpoint        string
-	ServiceEndpoint string
-
-	firstAuth  authKeys
-	secondAuth authKeys
-}
-
-func New(consumerKey string, consumerSecret string, secondSecret string) *RDConfig {
+func New(rid int, consumerKey string, consumerSecret string, secondSecret string) *RDConfig {
 	return &RDConfig{
 		ConsumerKey:     consumerKey,
 		ConsumerSecret:  consumerSecret,
 		SecondSecret:    secondSecret,
+		RestaurantID:    rid,
 		Endpoint:        "http://uk.rdbranch.com/OAuth/V10a",
 		ServiceEndpoint: "http://uk.rdbranch.com/WebServices/Epos/v1",
-		// http://app.restaurantdiary.com/WebServices/Epos/v1 ??
 	}
-}
-
-func (keys *authKeys) Parse(values url.Values) {
-	keys.Token = values.Get("oauth_token")
-	keys.Secret = values.Get("oauth_token_secret")
-}
-
-func (keys *authKeys) Valid() bool {
-	return len(keys.Token) > 0 && len(keys.Secret) > 0
 }
 
 func (conf *RDConfig) doOAuth(params []string, sig string, pos int) (*authKeys, error) {
@@ -130,6 +109,10 @@ func (conf *RDConfig) Authenticate() error {
 func (conf *RDConfig) SetKeys(token string, secret string) {
 	conf.secondAuth.Token = token
 	conf.secondAuth.Secret = secret
+}
+
+func (conf *RDConfig) RestaurantRequest(method, urlStr string, body io.Reader) (*http.Client, *http.Request, error) {
+	return conf.NewRequest(method, "/Restaurant/"+strconv.Itoa(conf.RestaurantID)+urlStr, body)
 }
 
 func (conf *RDConfig) NewRequest(method, urlStr string, body io.Reader) (*http.Client, *http.Request, error) {
