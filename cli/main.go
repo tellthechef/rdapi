@@ -3,6 +3,7 @@ package main
 import (
 	rd "../"
 	"fmt"
+	"time"
 )
 
 func main() {
@@ -11,7 +12,7 @@ func main() {
 		return
 	}
 
-	bookings, err := api.GetDiary("2016-01-21")
+	bookings, err := api.GetDiary(time.Date(2016, 1, 21, 0, 0, 0, 0, time.Local))
 	if err != nil {
 		panic(err)
 	}

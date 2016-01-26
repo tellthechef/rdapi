@@ -2,9 +2,13 @@ package rdapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/tellthechef/rdapi/models"
 	"strconv"
+	"time"
 )
+
+const DiaryDateFormat = "2006-01-02"
 
 type RDConfig struct {
 	ConsumerKey    string
@@ -19,10 +23,11 @@ type RDConfig struct {
 	secondAuth authKeys
 }
 
-func (api *RDConfig) GetDiary(date string) ([]models.ShortBooking, error) {
+func (api *RDConfig) GetDiary(date time.Time) ([]models.ShortBooking, error) {
 	var bookings []models.ShortBooking
 
-	client, req, _ := api.RestaurantRequest("GET", "/DiaryData?date="+date, nil)
+	fmt.Println("/DiaryData?date=" + date.Format(DiaryDateFormat))
+	client, req, _ := api.RestaurantRequest("GET", "/DiaryData?date="+date.Format(DiaryDateFormat), nil)
 	res, _ := client.Do(req)
 
 	err := json.NewDecoder(res.Body).Decode(&bookings)

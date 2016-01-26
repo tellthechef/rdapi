@@ -25,6 +25,10 @@ func (keys *authKeys) Valid() bool {
 }
 
 func (conf *RDConfig) GetAuthorization(method string, endpoint string) string {
+	if !conf.secondAuth.Valid() {
+		return "NOT AUTHENTICATED"
+	}
+
 	nonce := genNonce()
 	timestamp := strconv.Itoa(int(time.Now().Unix()))
 	u, _ := url.Parse(conf.ServiceEndpoint + endpoint)
