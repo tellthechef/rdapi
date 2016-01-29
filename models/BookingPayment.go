@@ -5,4 +5,5 @@ type BookingPayment struct {
 	Processed     bool `json:"IsProcessed"`
 	PaymentMethod string
 	ProcessedOn   string
+	ProcessedBy   int
 }

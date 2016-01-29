@@ -1,5 +1,7 @@
 package models
 
+import "strings"
+
 type Customer struct {
 	ID             int `json:"CustomerId"`
 	CustomerTypeID int `json:"CustomerTypeId"`
@@ -20,4 +22,8 @@ type Customer struct {
 
 	MobileNumber string
 	PhoneNumber  string
+}
+
+func (customer *Customer) GetFullName() string {
+	return strings.Join([]string{customer.Title, customer.FirstName, customer.Surname}, " ")
 }

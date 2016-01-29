@@ -24,17 +24,29 @@ type Booking struct {
 	BookingDateTime  string
 	VisitDateTime    string
 	Customer         Customer
+	CustomerSpend    int
 	Duration         int
 	Status           int
 	Covers           int
 	Comments         string
+	ChannelID        int `json:"ChannelId"`
 	ChannelName      string
+	MenuId           int `json:"MenuId"`
 	MenuName         string
 	Type             int
+	ArrivalStatus    int
+	ConfirmedByPhone bool
 
-	Promotions []BookingPromotion
-	Payments   []BookingPayment
-	Extras     []BookingExtra
+	IsGuestIntendingToPayByApp bool
+	IsLeaveTimeConfirmed       bool
+	MealStatus                 int
+	TurnTime                   int
+
+	SpecialRequests []interface{}
+	Promotions      []BookingPromotion
+	Payments        []BookingPayment
+	Extras          []BookingExtra
+	Tables          []int
 }
 
 func (booking *Booking) ParseBookingDate() *time.Time {
@@ -42,8 +54,11 @@ func (booking *Booking) ParseBookingDate() *time.Time {
 		return nil
 	}
 
-	datetime := strings.Replace(strings.Replace(booking.VisitDateTime, "/Date(", "", 1), ")/", "", 1)
-	dateInt, err := strconv.Atoi(datetime)
+	datetime := strings.Replace(booking.VisitDateTime, "/Date(", "", 1)
+	datetime = strings.Split(datetime, "+")[0]
+	datetime = strings.Replace(datetime, ")/", "", 1)
+
+	dateInt, err := strconv.ParseInt(datetime, 10, 64)
 	if err != nil {
 		return nil
 	}

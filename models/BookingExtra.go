@@ -1,5 +1,7 @@
 package models
 
 type BookingExtra struct {
-	ID int
+	ID       int `json:"Id"`
+	Name     string
+	Quantity int
 }
