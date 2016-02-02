@@ -54,7 +54,11 @@ func (booking *Booking) ParseBookingDate() *time.Time {
 		return nil
 	}
 
-	datetime := strings.Replace(booking.VisitDateTime, "/Date(", "", 1)
+	return ParseDate(booking.VisitDateTime)
+}
+
+func ParseDate(dateStr string) *time.Time {
+	datetime := strings.Replace(dateStr, "/Date(", "", 1)
 	datetime = strings.Split(datetime, "+")[0]
 	datetime = strings.Replace(datetime, ")/", "", 1)
 
