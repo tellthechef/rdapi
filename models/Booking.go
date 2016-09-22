@@ -24,7 +24,7 @@ type Booking struct {
 	BookingDateTime  string
 	VisitDateTime    string
 	Customer         Customer
-	CustomerSpend    int
+	CustomerSpend    float32
 	Duration         int
 	Status           int
 	Covers           int
