@@ -68,5 +68,7 @@ func ParseDate(dateStr string) *time.Time {
 	}
 
 	date := time.Unix(int64(dateInt/1000), 0)
+	date, _ = time.ParseInLocation(time.ANSIC, date.Format(time.ANSIC), time.Now().Location())
+
 	return &date
 }
