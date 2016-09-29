@@ -2,9 +2,10 @@ package rdapi
 
 import (
 	"encoding/json"
-	"github.com/tellthechef/rdapi/models"
 	"strconv"
 	"time"
+
+	"github.com/tellthechef/rdapi/models"
 )
 
 const DiaryDateFormat = "2006-01-02"
@@ -40,4 +41,13 @@ func (api *RDConfig) GetBooking(id int) (models.Booking, error) {
 
 	err := json.NewDecoder(res.Body).Decode(&booking)
 	return booking, err
+}
+
+func (api *RDConfig) GetRestaurant() (models.RestaurantConsolidated, error) {
+	var restaurant models.Restaurant
+	client, req, _ := api.RestaurantRequest("GET", "", nil)
+	res, _ := client.Do(req)
+
+	err := json.NewDecoder(res.Body).Decode(&restaurant)
+	return restaurant.Consolidate(), err
 }
