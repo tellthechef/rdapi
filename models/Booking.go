@@ -42,7 +42,7 @@ type Booking struct {
 	MealStatus                 int
 	TurnTime                   int
 
-	SpecialRequests []interface{}
+	SpecialRequests []int
 	Promotions      []BookingPromotion
 	Payments        []BookingPayment
 	Extras          []BookingExtra
@@ -73,4 +73,3 @@ func ParseDate(dateStr string) *time.Time {
 
 	return &date
 }
-
